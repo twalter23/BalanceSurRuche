@@ -21,24 +21,7 @@ void SevSegSetup()
   updateWithDelays, leadingZeros, disableDecPoint);
   sevseg.setNumber(888,1);
   sevseg.refreshDisplay();
-  //Serial.println("1");
-/*
-  ul_32Timer=millis();//Get time for timer
-    do
-      {
-          sevseg.setNumber(888,1);//Test all segments
-          sevseg.refreshDisplay();
-      }while(millis()<(ul_32Timer+ul_32Delay888));//Delay
-
-  ul_32Timer=millis();//Get local time for timer
-          do
-      {
-          sevseg.setNumber(9999,0);//Dsiplay - - - (because it's sytlé)
-          sevseg.refreshDisplay();
-      }while(millis()<(ul_32Timer+ul_32DelayTiret));//Delay
-        //Serial.println("11");
-        */
-}
+  }
 //----------------------------------------------------------------------------------------------------------------------------------------------//
 
 /************************************************************************************************************************************************/
@@ -53,6 +36,17 @@ void BatteryADCSetup()
   
 }
 
+ int ui_16GetBatVoltage()
+  {
+    unsigned int ui_16Batt_LVL_local;
+    Serial.print("Valeur non mappé ");
+    //Serial.println(analogRead(PIN_BATTERY_VOLTAGE_INPUT));
+    ui_16Batt_LVL_local = ((map(analogRead(PIN_BATTERY_VOLTAGE_INPUT), 0, 1023, 0, 4200))*ADC_CALIBRATION_GAIN);
+    Serial.print("Valeur mappé ");
+    //Serial.println(ui_16Batt_LVL_local);
+    return ui_16Batt_LVL_local;
+  }
+
 void TestBatteryLevelWithDisplayOff()
 {
   digitalWrite(PIN_N_TRANSISTOR_1,LOW);//On éteint l'afficheur pour le test de la batterie au démarrage
@@ -63,68 +57,6 @@ void TestBatteryLevelWithDisplayOff()
 
 //----------------------------------------------------------------------------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------------------------------------------------------------------------//
-/*unsigned int ReadVoltage(unsigned long ul32_Occurence, unsigned int ui16_DisplayForNoBlinking, unsigned int ui16_DotLocation)
-{
-  unsigned long ul32_BatteryVoltage,i;
-  
-  ul32_BatteryVoltage=analogRead(PIN_BATTERY_VOLTAGE_INPUT);
-  i=0;
-  
-  do{
-    ul32_BatteryVoltage+=analogRead(PIN_BATTERY_VOLTAGE_INPUT);
-    //Serial.println("ADC ONGOING");
-    //Serial.println(analogRead(PIN_BATTERY_VOLTAGE_INPUT));
-    i++;
-    //Serial.println(l32_BatteryVoltage);
-    sevseg.setNumber(ui16_DisplayForNoBlinking,ui16_DotLocation); // Displays '3.141'
-    sevseg.refreshDisplay();
-    }while(i<ul32_Occurence);
-    
-  ul32_BatteryVoltage/=ul32_Occurence;
-  Serial.println("ADC READ");
-  Serial.println(ul32_BatteryVoltage);
-  return map(ul32_BatteryVoltage, 0, 1023, 0, 5000);  
-}
-
-
-
-void CheckVoltageLevel(unsigned long ui32_VoltageLevel)
-{
-unsigned long ul_32Timer;
-const long ul_32DelayOffDisp = 2000;//2000ms Delay constant
-
-  //Serial.println(ui32_VoltageLevel);
-  Serial.println(ui32_VoltageLevel);
-  if(ui32_VoltageLevel<=VAL_BATTERY_LOW_INDICATOR_VOLTAGE)
-    {
-      digitalWrite(PIN_BATTERY_LOW_INDICATOR,HIGH);//Indicateur batterie faible activé
-      Serial.println("LOW");
-      Serial.println(ui32_VoltageLevel);
-    }
-  
-  if((ui32_VoltageLevel<=VAL_BATTERY_LOW_SHUTDOWN_VOLTAGE))
-    {
-        ul_32Timer=millis();//Get local time for timer
-
-    do
-      {
-        sevseg.setChars("Bat");//Display "BAT" before shutdown
-        sevseg.refreshDisplay();
-      }while(millis()<(ul_32Timer+ul_32DelayOffDisp));//Delay
-          
-	    Serial.println("VERY LOW");
-      Serial.println(ui32_VoltageLevel);  
-      digitalWrite(PIN_BATTERY_SHUTDWN_2N4403,LOW);//Désactive la sortie batterie, ce qui éteindra l'arduino et tous les affichages
-      
-    }
-}
-*/
-//----------------------------------------------------------------------------------------------------------------------------------------------//
-// 		/ | \
-// 		  | all above to delete?
-// 		  |
-//----------------------------------------------------------------------------------------------------------------------------------------------//
 bool EnableOrNotDisplay()
   { 
     unsigned int ui_16BatteryVoltage;
@@ -136,7 +68,7 @@ bool EnableOrNotDisplay()
     
     if(sb_DisplayStatus==1)//On est en haut de l'hystérésis (affichage allumé)
     {
-      if(ui_16BatteryVoltage>LOW_BATT_THRESHOLD)//On est au dessus du seuil de descente => On reste en haut
+      if(ui_16BatteryVoltage>LOW_BATT_HYST_LOW_THRESHOLD_mV)//On est au dessus du seuil de descente => On reste en haut
       {
         //sb_DisplayStatus=1;//Utile?
         SetDisplayOn();//Autorise l'affichage et désactive la LED Batterie faible
@@ -148,7 +80,7 @@ bool EnableOrNotDisplay()
       }
     }else//On est en bas de l'hystérésis : b_DisplayStatus==0
     {
-      if(ui_16BatteryVoltage>LOW_BATT_THRESHOLD_HYST)//On est au dessus du seuil de remontée => On remonte
+      if(ui_16BatteryVoltage>LOW_BATT_HYST_HIGH_THRESHOLD_mV)//On est au dessus du seuil de remontée => On remonte
       {
         sb_DisplayStatus=1;//Changement de statut de l'affichage
         SetDisplayOn();//Autorise l'affichage et désactive la LED Batterie faible
@@ -191,17 +123,6 @@ bool EnableOrNotDisplay()
 
 //----------------------------------------------------------------------------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------------------------------------------------------------------------//
-  int ui_16GetBatVoltage()
-  {
-    unsigned int ui_16Batt_LVL_local;
-    Serial.print("Valeur non mappé ");
-    //Serial.println(analogRead(PIN_BATTERY_VOLTAGE_INPUT));
-    ui_16Batt_LVL_local = ((map(analogRead(PIN_BATTERY_VOLTAGE_INPUT), 0, 1023, 0, 4200))*ADC_CALIBRATION);
-    Serial.print("Valeur mappé ");
-    //Serial.println(ui_16Batt_LVL_local);
-    return ui_16Batt_LVL_local;
-  }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------//
 int i16_Weight, i16_WeightMemo;
@@ -234,14 +155,14 @@ static long sl_32Timer;
 
   if(b_TimerSetup==0)//Initialisation of Timer
   {
-    sl_32Timer=(millis()-BATTERY_VOLTAGE_READ_FREQUENCY);//get time for timer
+    sl_32Timer=(millis()-BATTERY_VOLTAGE_READ_FREQUENCY_ms);//get time for timer
     ul_32Timer=millis();
     i16_WeightMemo = 0;
     b_TimerSetup=1;//Set initialisation to done
     //Serial.println(1);
   }
   
-  if(millis()>(sl_32Timer+BATTERY_VOLTAGE_READ_FREQUENCY))//Time to read battery level
+  if(millis()>(sl_32Timer+BATTERY_VOLTAGE_READ_FREQUENCY_ms))//Time to read battery level
   {
     sl_32Timer=millis();//reset timer
     // CheckVoltageLevel(ReadVoltage(1000,ui16_WeightMemo,1));//ReadBatVoltage
@@ -260,10 +181,6 @@ static long sl_32Timer;
     {
         i16_WeightMemo-=1000;//Weight is superior to 100kg
 	  }
-       //Serial.println(ui16_WeightMemo);
-
-       //Serial.println("Poids:");
-       //Serial.println(i16_WeightMemo);
 
     if (sb_DisplayEnabled==0)//Eteint
     {
@@ -278,23 +195,7 @@ static long sl_32Timer;
        sevseg.setNumber(i16_WeightMemo,1); // Displays Weight
        sevseg.refreshDisplay();
     }
-          
-   //Serial.println(digitalRead(PIN_INTERRUPTOR_STATE));
 
-    /*if(digitalRead(PIN_INTERRUPTOR_STATE)==LOW)
-    {
-      digitalWrite(PIN_BATTERY_SHUTDWN_2N4403,LOW);
-    }*/
-
-       /*Serial.println(ReadVoltage(1000,ui16_WeightMemo,1));
-       delay(1000);
-       sevseg.refreshDisplay();
-      
-       if((millis()-ul_32Timer)>100)//0.1s has elapsed
-        {sevseg.setNumber(ui16_WeightMemo,1);
-          ui16_WeightMemo++;
-        ul_32Timer=millis();
-        }*/
 }
 
 

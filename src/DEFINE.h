@@ -4,13 +4,13 @@
 #define _DEFINE_H    // (Use a suitable name, usually based on the file name.)
 
 //Threshold values for battery level
-#define LOW_BATT_THRESHOLD 3300 //mV
-#define LOW_BATT_THRESHOLD_HYST 3800 //mV
+#define LOW_BATT_HYST_LOW_THRESHOLD_mV 3300 //mV
+#define LOW_BATT_HYST_HIGH_THRESHOLD_mV 3800 //mV
 //End of threshold values for battery level
 
 //Others for battery
-#define BATTERY_VOLTAGE_READ_FREQUENCY 5000 //ms
-#define ADC_CALIBRATION 1.07 //Empirical (1,14)
+#define BATTERY_VOLTAGE_READ_FREQUENCY_ms 5000 //ms
+#define ADC_CALIBRATION_GAIN_GAIN 1.07 //Empirical (1,14)
 //End of others for battery
 
 //Pin Mapping for battery
