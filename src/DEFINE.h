@@ -10,7 +10,7 @@
 
 //Others for battery
 #define BATTERY_VOLTAGE_READ_FREQUENCY_ms 5000 //ms
-#define ADC_CALIBRATION_GAIN_GAIN 1.07 //Empirical (1,14)
+#define ADC_CALIBRATION_GAIN 1.07 //Empirical (1,14)
 //End of others for battery
 
 //Pin Mapping for battery
